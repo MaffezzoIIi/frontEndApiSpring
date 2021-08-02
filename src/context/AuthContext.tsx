@@ -1,6 +1,9 @@
-import React, { createContext } from "react";
-import { useCallback } from "react";
+import React, { createContext, useCallback, useState  } from "react";
 import api from "../service/api"
+
+interface AuthState {
+  jwt: string;
+}
 
 interface SigInCredentials {
   email: string;
@@ -8,7 +11,6 @@ interface SigInCredentials {
 }
 
 interface AuthContextData {
-  user: string;
   singIn(credentials: SigInCredentials): Promise<void>;
 }
 
@@ -17,17 +19,31 @@ export const AuthContext = createContext<AuthContextData>(
 );
 
 export const AuthProvider: React.FC = ({ children }) => {
+  const [data, setData] = useState<AuthState>(() => {
+    const jwt = localStorage.getItem("@Logistica:token");
+
+    if(jwt){
+      return { jwt };
+    }
+
+    return {} as AuthState;
+  });
+
   const singIn = useCallback(async ({ email, senha }) => {
-    const response = await api.post("authenticate", {
-      email,
-      senha,
-    })
+    const response = await api.post("authenticate", { 
+      email, senha,
+    });
 
     console.log(response.data);
+
+    const { jwt } = response.data;
+
+    localStorage.setItem("@Logistica:toke", jwt);
+    setData(jwt);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user: "Thomas", singIn }} >
+    <AuthContext.Provider value={{singIn}} >
       {children}
     </AuthContext.Provider>
   );
