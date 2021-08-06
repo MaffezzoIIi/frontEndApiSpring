@@ -5,6 +5,7 @@ import { Form } from "@unform/web";
 import { FormHandles } from "@unform/core";
 
 import * as Yup from "yup";
+import { Link, useHistory } from "react-router-dom";
 
 import Input from "../../components/Input";
 import Button from "../../components/Button";
@@ -23,9 +24,12 @@ interface SingInFormData {
 
 const SigIn: React.FC = () => {
     const formRef = useRef<FormHandles>(null);
+    const history = useHistory();
 
     const { singIn } = useAuth();
     const { addToast } = useToast();
+
+
     const handleSubmit = useCallback(async (data: SingInFormData) => {
         try {
             formRef.current?.setErrors({});
@@ -46,6 +50,7 @@ const SigIn: React.FC = () => {
                 senha: data.senha
             });
 
+            history.push('/');
         } catch (err) {
             if (err instanceof Yup.ValidationError) {
                 const errors = getValidationErrors(err);
@@ -57,7 +62,7 @@ const SigIn: React.FC = () => {
                 description: 'Ocorreu um erro ao fazer login, cheque as credenciais',
             });
         }
-    }, [singIn, addToast]);
+    }, [singIn, addToast, history]);
 
     return (
         <Container>
@@ -73,7 +78,7 @@ const SigIn: React.FC = () => {
                     <a href="teste">Esqueci minha senha</a>
                 </Form>
 
-                <a href="teste"><FiLogIn />Criar conta</a>
+                <Link to="/signup"><FiLogIn />Criar conta</Link>
 
             </Content>
             <Background />
