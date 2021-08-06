@@ -9,7 +9,9 @@ import * as Yup from "yup";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 
-import { AuthContext } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/auth";
+import { useToast } from "../../hooks/toast";
+
 import getValidationErrors from "../../utils/getValidationErrors";
 
 import { Container, Content, Background } from './style';
@@ -22,8 +24,8 @@ interface SingInFormData {
 const SigIn: React.FC = () => {
     const formRef = useRef<FormHandles>(null);
 
-    const { singIn } = useContext(AuthContext);
-
+    const { singIn } = useAuth();
+    const { addToast } = useToast();
     const handleSubmit = useCallback(async (data: SingInFormData) => {
         try {
             formRef.current?.setErrors({});
@@ -39,15 +41,23 @@ const SigIn: React.FC = () => {
                 abortEarly: false,
             });
 
-            singIn({
+            await singIn({
                 email: data.email,
                 senha: data.senha
-            })
+            });
+
         } catch (err) {
-            const errors = getValidationErrors(err);
-            formRef.current?.setErrors(errors);
+            if (err instanceof Yup.ValidationError) {
+                const errors = getValidationErrors(err);
+                formRef.current?.setErrors(errors);
+            }
+            addToast({
+                type: 'error',
+                title: 'Ocorreu um erro na autenticação',
+                description: 'Ocorreu um erro ao fazer login, cheque as credenciais',
+            });
         }
-    }, [singIn]);
+    }, [singIn, addToast]);
 
     return (
         <Container>
