@@ -1,5 +1,9 @@
 import React from "react";
-import { RouteProps as ReactDOMRoutesProps } from "react-router-dom";
+import {
+  RouteProps as ReactDOMRoutesProps,
+  Route as ReactDOMRoute,
+  Redirect
+} from "react-router-dom";
 
 import { useAuth } from "../hooks/auth";
 
@@ -13,9 +17,25 @@ const Route: React.FC<RouteProps> = ({
   component: Component,
   ...rest
 }) => {
-  const { } = useAuth();
+  const { usuario } = useAuth();
 
-  return <h1>teste</h1>
+  return (
+    <ReactDOMRoute
+      {...rest}
+      render={({ location }) => {
+        return isPrivate === !!usuario ? (
+          <Component />
+        ) : (
+          <Redirect
+            to={{
+              pathname: isPrivate ? "/" : "/dashboard",
+              state: { from: location },
+            }}
+          />
+        )
+      }}
+    />
+  )
 };
 
 export default Route;
